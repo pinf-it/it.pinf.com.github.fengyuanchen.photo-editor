@@ -1,7 +1,7 @@
 <template>
   <div class="app">
     <header class="header">
-      <span class="title">Photo Editor</span>
+      <span class="title">{{ $store.state.editor.title }}</span>
       <navbar @change="change"></navbar>
     </header>
     <main class="main">

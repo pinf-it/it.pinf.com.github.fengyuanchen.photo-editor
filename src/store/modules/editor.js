@@ -1,8 +1,25 @@
 import * as types from '../mutation-types';
 
 const initialState = {
+  title: "Photo Editor",
   cropped: false,
   cropping: false,
+  buttons: {
+    cancel: true,
+    remove: true,
+    download: true,
+    viewOnGithub: true
+  },
+  cropper: {
+    options: {
+      cropBoxResizable: true,
+      zoomable: true,
+      rotatable: true
+    },
+    data: null,
+    canvasData: null,
+    cropBoxData: null
+  }
 };
 
 const mutations = {

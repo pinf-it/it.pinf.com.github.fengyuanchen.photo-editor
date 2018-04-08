@@ -6,10 +6,10 @@
     <div class="toolbar" v-if="cropper" @click="click">
       <button class="toolbar__button" data-action="move" title="Move (M)"><span class="fa fa-arrows"></span></button>
       <button class="toolbar__button" data-action="crop" title="Crop (C)"><span class="fa fa-crop"></span></button>
-      <button class="toolbar__button" data-action="zoom-in" title="Zoom In (I)"><span class="fa fa-search-plus"></span></button>
-      <button class="toolbar__button" data-action="zoom-out" title="Zoom Out (O)"><span class="fa fa-search-minus"></span></button>
-      <button class="toolbar__button" data-action="rotate-left" title="Rotate Left (L)"><span class="fa fa-rotate-left"></span></button>
-      <button class="toolbar__button" data-action="rotate-right" title="Rotate Right (R)"><span class="fa fa-rotate-right"></span></button>
+      <button class="toolbar__button" data-action="zoom-in" title="Zoom In (I)" v-if="editor.cropper.options.zoomable"><span class="fa fa-search-plus"></span></button>
+      <button class="toolbar__button" data-action="zoom-out" title="Zoom Out (O)" v-if="editor.cropper.options.zoomable"><span class="fa fa-search-minus"></span></button>
+      <button class="toolbar__button" data-action="rotate-left" title="Rotate Left (L)" v-if="editor.cropper.options.rotatable"><span class="fa fa-rotate-left"></span></button>
+      <button class="toolbar__button" data-action="rotate-right" title="Rotate Right (R)" v-if="editor.cropper.options.rotatable"><span class="fa fa-rotate-right"></span></button>
       <button class="toolbar__button" data-action="flip-horizontal" title="Flip Horizontal (H)"><span class="fa fa-arrows-h"></span></button>
       <button class="toolbar__button" data-action="flip-vertical" title="Flip Vertical (V)"><span class="fa fa-arrows-v"></span></button>
     </div>
@@ -41,6 +41,41 @@
 
     mounted() {
       window.addEventListener('keydown', (this.onKeydown = this.keydown.bind(this)));
+      this.$refs.image.addEventListener('zoom', function (event) {
+        // Prevent zooming in more than minimum resolution
+        if (
+          event.detail.ratio > event.detail.oldRatio &&
+          event.detail.ratio > 1
+        ) {
+          event.preventDefault();
+          this.cropper.zoomTo(1);
+        }
+      });
+      this.$refs.image.addEventListener('cropmove', function (event) {
+        var data = this.cropper.getData();
+        var image = this.cropper.getImageData();
+        var canvas = this.cropper.getCanvasData();
+        if (data.x < 0) {
+          event.preventDefault();
+          data.x = 0;
+          this.cropper.setData(data);
+        }
+        if (data.y < 0) {
+          event.preventDefault();
+          data.y = 0;
+          this.cropper.setData(data);
+        }
+        if (data.x + data.width > canvas.naturalWidth) {
+          event.preventDefault();
+          data.x = canvas.naturalWidth - data.width;
+          this.cropper.setData(data);
+        }
+        if (data.y + data.height > canvas.naturalHeight) {
+          event.preventDefault();
+          data.y = canvas.naturalHeight - data.height;
+          this.cropper.setData(data);
+        }
+      });
     },
 
     beforeDestroy() {
@@ -210,17 +245,48 @@
           autoCrop: false,
           dragMode: 'move',
           background: false,
+          cropBoxResizable: this.editor.cropper.options.cropBoxResizable,
+          zoomable: this.editor.cropper.options.zoomable,
+          rotatable: this.editor.cropper.options.rotatable,
+          autoCrop: false,
           ready: () => {
+            if (this.editor.cropper.data) {
+              this.cropper
+                .zoomTo(1)
+                .crop()
+                .setData(this.editor.cropper.data)
+                .setCanvasData(this.editor.cropper.canvasData)
+                .setCropBoxData(this.editor.cropper.cropBoxData);
+              this.data = null;
+              this.canvasData = null;
+              this.cropBoxData = null;
+            } else
+            if (this.editor.cropper.cropBoxData) {
+              this.cropper
+                .zoomTo(1)
+                .crop()
+                .setCropBoxData(this.editor.cropper.cropBoxData);
+              this.data = null;
+              this.canvasData = null;
+              this.cropBoxData = null;
+            } else
             if (this.data) {
               this.cropper
+                .zoomTo(1)
                 .crop()
                 .setData(this.data)
                 .setCanvasData(this.canvasData)
                 .setCropBoxData(this.cropBoxData);
-
               this.data = null;
               this.canvasData = null;
               this.cropBoxData = null;
+            }
+            var canvasData = this.cropper.getCanvasData();
+            if (
+              canvasData.width > canvasData.naturalWidth &&
+              canvasData.height > canvasData.naturalHeight
+            ) {
+              this.cropper.zoomTo(1);
             }
           },
           crop: ({ detail }) => {
@@ -251,9 +317,25 @@
           this.data = cropper.getData();
           this.canvasData = cropper.getCanvasData();
           this.cropBoxData = cropper.getCropBoxData();
+
+
+console.log(JSON.stringify({
+  data: this.data,
+  canvasData: this.canvasData,
+  cropBoxData: this.cropBoxData,
+  options: this.editor.cropper.options
+}, null, 4));
+
+
           this.$store.dispatch('editor/update', {
             cropped: true,
             cropping: false,
+            cropper: {
+              data: this.data,
+              canvasData: this.canvasData,
+              cropBoxData: this.cropBoxData,
+              options: this.editor.cropper.options
+            }
           });
           this.$store.dispatch('loader/update', {
             previousUrl: url,

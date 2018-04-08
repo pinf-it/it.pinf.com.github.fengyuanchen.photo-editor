@@ -3,11 +3,11 @@
     <nav class="nav" @click="click">
       <label class="nav__button" for="file" title="Upload" role="button" v-show="!loader.loaded"><span class="fa fa-upload"></span></label>
       <button type="button" class="nav__button" data-action="restore" title="Undo (Ctrl + Z)" v-show="editor.cropped"><span class="fa fa-undo"></span></button>
-      <button type="button" class="nav__button nav__button--danger" data-action="remove" title="Delete (Delete)" v-show="loader.loaded && !editor.cropping"><span class="fa fa-trash"></span></button>
-      <button type="button" class="nav__button nav__button--danger" data-action="clear" title="Cancel (Esc)" v-show="editor.cropping"><span class="fa fa-ban"></span></button>
+      <button type="button" class="nav__button nav__button--danger" data-action="remove" title="Delete (Delete)" v-show="editor.buttons.remove && loader.loaded && !editor.cropping"><span class="fa fa-trash"></span></button>
+      <button type="button" class="nav__button nav__button--danger" data-action="clear" title="Cancel (Esc)" v-show="editor.buttons.cancel && editor.cropping"><span class="fa fa-ban"></span></button>
       <button type="button" class="nav__button nav__button--success" data-action="crop" title="OK (Enter)" v-show="editor.cropping"><span class="fa fa-check"></span></button>
-      <a class="nav__button nav__button--success" title="Download" :download="loader.name" :href="loader.url" v-if="downloadable && loader.loaded"><span class="fa fa-download"></span></a>
-      <a class="nav__button" href="https://github.com/fengyuanchen/photo-editor" title="View on GitHub"><span class="fa fa-github"></span></a>
+      <a class="nav__button nav__button--success" title="Download" :download="loader.name" :href="loader.url" v-if="editor.buttons.download && downloadable && loader.loaded"><span class="fa fa-download"></span></a>
+      <a class="nav__button" href="https://github.com/fengyuanchen/photo-editor" title="View on GitHub" v-if="editor.buttons.viewOnGithub"><span class="fa fa-github"></span></a>
     </nav>
   </div>
 </template>
