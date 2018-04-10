@@ -18,7 +18,6 @@ var messageOrigin = null;
 var messageTarget = null;
 
 function broadcastState () {
-console.log("broadcastState()", messageOrigin, messageTarget);  
   if (!messageOrigin) {
     return;
   }
