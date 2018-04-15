@@ -3,6 +3,8 @@ const path = require('path');
 const ip = require('ip');
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const PORT = process.env.PORT || null;
+const OPEN_BROWSER = (process.env.npm_lifecycle_event === "dev") && !(process.env.OPEN_BROWSER === "0");
 
 module.exports = {
   entry: './src/index.js',
@@ -53,6 +55,8 @@ module.exports = {
   ],
   devServer: {
     host: ip.address(),
+    port: PORT,
+    open: OPEN_BROWSER,
     stats: {
       colors: true,
       chunks: false,
